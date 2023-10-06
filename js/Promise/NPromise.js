@@ -5,8 +5,18 @@ const PENDING = 'pending';
 const FULFILLED = 'fulfilled';
 const REJECTED = 'rejected';
 
+/**
+ * @param {Function} callback 辅助函数，将then的回调加入微队列
+ */
+function runMicroTask(callback) {
+    if (process && process.nextTick) {
+        process.nextTick(callback);
+    } else {
+        setTimeout(callback, 0);
+    }
+}
+
 /** 
- * sdsdsdsdsd
  * @param {Function} excutor 参数
  */
 class NPromise {
@@ -46,4 +56,11 @@ class NPromise {
     _rejected(reason) {
         this._changeState(REJECTED, reason)
     }
+
+    /**
+     * Promise A+ 的then,then的两个入参都是函数并且都需要是异步
+     * @param {Function} onFulfilled 
+     * @param {Function} onRejected 
+     */
+    then(onFulfilled, onRejected){}
 }
