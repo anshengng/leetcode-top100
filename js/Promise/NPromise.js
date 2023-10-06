@@ -17,15 +17,16 @@ function runMicroTask(callback) {
 }
 
 /** 
- * @param {Function} excutor 参数
+ * @param {Function} executor 参数
  */
 class NPromise {
-    constructor(excutor) {
+    constructor(executor) {
         this._state = PENDING;
         this._value = undefined;
+        this._thenTask = []
         //不仅有resolve和rejected还有可能throw error
         try {
-            excutor(this._resolve.bind(this), this._rejected.bind(this))
+            executor(this._resolve.bind(this), this._reject.bind(this))
             //_resolve和_rejected中都使用this，但是调用方式是resolve()直接调用，所以需要指定this
         } catch (error) {
             this._changeState(REJECTED, error)
@@ -53,7 +54,7 @@ class NPromise {
     /**
      * @param {any} reason 失败
      */
-    _rejected(reason) {
+    _reject(reason) {
         this._changeState(REJECTED, reason)
     }
 
@@ -62,5 +63,27 @@ class NPromise {
      * @param {Function} onFulfilled 
      * @param {Function} onRejected 
      */
-    then(onFulfilled, onRejected){}
+    then(onFulfilled, onRejected) {
+        return new NPromise((resolve, reject) => {
+            //onFulfilled, onRejected在状态改变完成后加入队列中，需要维护一个队列
+            this.pushThenTask(onFulfilled, FULFILLED, resolve, reject);
+            this.pushThenTask(onRejected, REJECTED, resolve, reject);
+        })
+    }
+
+    /**
+     * 用于添加队列的成员
+     * @param {Function} executor  需要加入队列中执行的函数
+     * @param {String} state  执行时需要的状态 FULFILLED REJECTED
+     * @param {Function} resolve 让return的NPromise成功
+     * @param {Function} reject 让return的NPromise失败
+     */
+    pushThenTask(executor, state, resolve, reject) {
+        this._thenTask.push({
+            executor,
+            state,
+            resolve,
+            reject
+        })
+    }
 }
