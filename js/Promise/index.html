@@ -16,17 +16,17 @@
             // reject(456);
             // throw 789
 
-            //测试then队列
+            // 测试then队列
             setTimeout(() => {
                 resolve(123)
                 console.log(npro)
-            }, 1);
+            }, 1000);
         })
         npro.then(
             function a1() { },
-            function a1() { }
+            function a2() { }
         )
-        // console.log(npro);
+        console.log(npro);
     </script>
 </body>
 

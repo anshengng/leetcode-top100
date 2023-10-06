@@ -42,6 +42,7 @@ class NPromise {
         if (this._state !== PENDING) return
         this._state = newState;
         this._value = newValue;
+        this._runTask()
     }
 
     /**
@@ -66,8 +67,9 @@ class NPromise {
     then(onFulfilled, onRejected) {
         return new NPromise((resolve, reject) => {
             //onFulfilled, onRejected在状态改变完成后加入队列中，需要维护一个队列
-            this.pushThenTask(onFulfilled, FULFILLED, resolve, reject);
-            this.pushThenTask(onRejected, REJECTED, resolve, reject);
+            this._pushThenTask(onFulfilled, FULFILLED, resolve, reject);
+            this._pushThenTask(onRejected, REJECTED, resolve, reject);
+            this._runTask() //每次调用then时也需要遍历task，判断是否已经resolve或reject
         })
     }
 
@@ -78,12 +80,32 @@ class NPromise {
      * @param {Function} resolve 让return的NPromise成功
      * @param {Function} reject 让return的NPromise失败
      */
-    pushThenTask(executor, state, resolve, reject) {
+    _pushThenTask(executor, state, resolve, reject) {
         this._thenTask.push({
             executor,
             state,
             resolve,
             reject
         })
+    }
+
+    /**
+     * 当NPromise的任务完成后，遍历Task并执行 (changeState,then)
+    */
+    _runTask() {
+        if(this._state === PENDING) return;//任务未完成不执行，当执行changestate时需要执行
+        while(this._thenTask[0]){
+            let t = this._thenTask[0];
+            this._runOneTask(t);
+            this._thenTask.shift() //每个任务执行完后都需要删除
+        }
+     }
+
+     /**
+      * 执行thenTask中的每一项
+      * @param {Object} handler 
+      */
+    _runOneTask(handler){
+        
     }
 }
