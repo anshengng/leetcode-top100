@@ -10,7 +10,13 @@
 <body>
     <script src="./NPromise.js"></script>
     <script>
-        const np = new NPromise(2)
+        const npro = new NPromise((resolve,reject)=>{
+            resolve(123);
+            resolve(123);
+            reject(456);
+            // throw 789
+        })
+        console.log(npro);
     </script>
 </body>
 
