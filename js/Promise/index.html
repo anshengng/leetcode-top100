@@ -10,23 +10,79 @@
 <body>
     <script src="./NPromise.js"></script>
     <script>
-        const npro = new NPromise((resolve, reject) => {
-            // resolve(123);
-            // resolve(123);
-            // reject(456);
-            // throw 789
+        /**
+         * 简单测试NPromise
+         */
+        // const npro = new NPromise((resolve, reject) => {
+        //     // resolve(123);
+        //     // resolve(123);
+        //     // reject(456);
+        //     // throw 789
 
-            // 测试then队列
-            setTimeout(() => {
-                resolve(123)
-                console.log(npro)
-            }, 1000);
-        })
-        npro.then(
-            function a1() { },
-            function a2() { }
-        )
-        console.log(npro);
+        //     // 测试then队列
+        //     setTimeout(() => {
+        //         resolve(123)
+        //         console.log(npro)
+        //     }, 1000);
+        // })
+        // npro.then(
+        //     function a1() { },
+        //     function a2() { }
+        // ) //先将a1和a2函数放入队列，setTimeout 1秒后resolve,改变状态并且执行队列
+        // console.log(npro);
+
+        /**
+         * A+ 测试
+         */
+        // const pro = new NPromise((resolve, reject) => {
+        //     // setTimeout(() => {
+        //     //     resolve(123)
+        //     //     // reject(456)
+        //     // }, 1000)
+        //     resolve(1233)
+        //     // throw 789
+        // })
+        // // pro.then(res => {
+        // //     console.log(res)
+        // // }, err => {
+        // //     console.log(err)
+        // // })
+        // console.log(pro)
+        // const pro2 = pro.then()
+        // console.log(pro2) //如果未传递onFulfilled,onReject,则pro2应该和pro是一个状态（在runOneTask中手动resolve...了）
+
+        /**
+         * 测试互操作
+         */
+        // const pro = new NPromise((resolve, reject) => {
+        //     resolve(123)
+        // })
+        // pro.then(res => { //then返回的是NPromise
+        //     console.log(res)
+        //     return new Promise((resolve, reject) => {
+        //         resolve('again')
+        //     })
+        // })
+        //     .then(res => {
+        //         res.then(res => {
+        //             console.log(res)
+        //         }) //需要处理两次then才能获取Promise 
+        //         //TODO 待处理,需要改善
+        //     })
+
+        /**
+        *测试 async await 
+        */
+        function delay(duration) {
+            return new Promise((resolve, reject) => {
+                setTimeout(resolve, duration)
+            })
+        }
+        (async function () {
+            console.log('测试await 开始')
+            await delay(1000)
+            console.log('测试await 结束')
+        })()
     </script>
 </body>
 

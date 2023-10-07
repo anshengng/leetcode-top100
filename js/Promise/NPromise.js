@@ -16,6 +16,15 @@ function runMicroTask(callback) {
     }
 }
 
+/**
+ * 判断是否为Promise
+ * @param {Object} obj  
+ */
+function isPromise(obj) {
+    return !!(obj && typeof obj === 'object' && typeof obj.then === 'function');
+    //是对象并且有then方法
+}
+
 /** 
  * @param {Function} executor 参数
  */
@@ -65,11 +74,13 @@ class NPromise {
      * @param {Function} onRejected 
      */
     then(onFulfilled, onRejected) {
-        return new NPromise((resolve, reject) => {
+        return new NPromise((resolve, reject) => { //实现链式调用需要return NPromise
             //onFulfilled, onRejected在状态改变完成后加入队列中，需要维护一个队列
-            this._pushThenTask(onFulfilled, FULFILLED, resolve, reject);
+            this._pushThenTask(onFulfilled, FULFILLED, resolve, reject); //或许能用this._rersolve和reject？？？
             this._pushThenTask(onRejected, REJECTED, resolve, reject);
             this._runTask() //每次调用then时也需要遍历task，判断是否已经resolve或reject
+
+            //！！！！return 的 NPromise需要在runTask中进行处理（resolve或者reject）,如果有传递onFulfilled, onRejected则直接执行对应的Function获取结果res,再resolve(res),否则就需要手动执行resolve或者reject
         })
     }
 
@@ -93,19 +104,32 @@ class NPromise {
      * 当NPromise的任务完成后，遍历Task并执行 (changeState,then)
     */
     _runTask() {
-        if(this._state === PENDING) return;//任务未完成不执行，当执行changestate时需要执行
-        while(this._thenTask[0]){
+        if (this._state === PENDING) return;//任务未完成不执行，当执行changestate时需要执行
+        while (this._thenTask[0]) {
             let t = this._thenTask[0];
             this._runOneTask(t);
             this._thenTask.shift() //每个任务执行完后都需要删除
         }
-     }
+    }
 
-     /**
-      * 执行thenTask中的每一项
-      * @param {Object} handler 
-      */
-    _runOneTask(handler){
-        
+    /**
+     * 执行thenTask中的每一项
+     * @param {Object} handler 
+     */
+    _runOneTask({ executor, state, resolve, reject }) {
+        if (state !== this._state) return;
+        if (typeof executor !== 'function') {
+            this._state === FULFILLED ? resolve(this._value) : reject(this._value);
+        }
+        try {
+            const result = executor(this._value)
+            //如果onFulfilled又返回NPromise
+            if (isPromise(result)) {
+                result.then(resolve, reject)
+            }
+            resolve(result)
+        } catch (error) {
+            reject(error)
+        }
     }
 }
