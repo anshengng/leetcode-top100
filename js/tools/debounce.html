@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    button {
+        width: 150px;
+        height: 60px;
+        background-color: skyblue;
+        opacity: .6;
+        border: 1px solid rgb(23, 193, 235, .5);
+        border-radius: 40px;
+        cursor: pointer;
+        font-size: 20px;
+        font-weight: 600;
+    }
+</style>
+<body>
+    <button>click me!!!</button>
+</body>
+<script>
+    const btn = document.querySelector('button');
+    btn.addEventListener('click', () => {
+        console.log('click!!')
+    })
+</script>
+
+</html>
